@@ -1,0 +1,78 @@
+version: "3"
+services:
+  service_registry:
+    image: service-registry
+    ports:
+      - "8761:8761"
+    networks:
+      - service-registry
+ 
+  cloud_gateway_service:
+    image: cloud-gateway-service
+    ports:
+      - "9191:9191"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+
+  cloud_config_service:
+    image: cloud-config-service
+    ports:
+      - "9296:9296"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+
+  token_service:
+    image: token-service
+    ports:
+      - "9099:9099"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+      - mongo_db
+      
+  onboarding_task_service:
+    image: onboarding-task-service
+    ports:
+      - "9094:9094"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+      - mongo_db
+      
+  associate_service:
+    image: associate-service
+    ports:
+      - "9092:9092"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+      - cloud_gateway_service
+      - cloud_config_service
+      - mongo_db
+      
+  skill-service:
+    image: skill-service
+    ports:
+      - "9091:9091"
+    networks:
+      - service-registry
+    depends_on:
+      - service_registry
+      - mongo_db
+
+  mongo_db:
+    image: 4130848d45a9
+    ports:
+      - "27017:27017"
+    networks:
+      - service-registry
+
+networks:
+  service-registry:
