@@ -1,3 +1,6 @@
+# Before running docker-compose make sure all below images are available
+# cmd : docker-compose up/down/pause
+# to install docker desktop : https://docs.docker.com/desktop/install/windows-install/
 version: "3"
 services:
   service_registry:

@@ -1,3 +1,4 @@
+#cmd : docker build -t service-registry .
 FROM openjdk:8
 EXPOSE 8761
 ADD target/service-registry.jar service-registry.jar
