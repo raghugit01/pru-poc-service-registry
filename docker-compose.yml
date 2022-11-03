@@ -5,14 +5,35 @@ services:
     ports:
       - "8761:8761"
     networks:
-      - service-registry
- 
+      vpcbr: 
+        ipv4_address: 10.5.0.5
+
+  token_service:
+    image: token-service
+    ports:
+      - "9099:9099"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.6
+    depends_on:
+      - service_registry
+      - mongo_db
+
+  mongo_db:
+    image: 4130848d45a9
+    ports:
+      - "27017:27017"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.7
+         
   cloud_gateway_service:
     image: cloud-gateway-service
     ports:
       - "9191:9191"
     networks:
-      - service-registry
+      vpcbr: 
+        ipv4_address: 10.5.0.8
     depends_on:
       - service_registry
 
@@ -21,26 +42,18 @@ services:
     ports:
       - "9296:9296"
     networks:
-      - service-registry
+      vpcbr: 
+        ipv4_address: 10.5.0.9
     depends_on:
       - service_registry
-
-  token_service:
-    image: token-service
-    ports:
-      - "9099:9099"
-    networks:
-      - service-registry
-    depends_on:
-      - service_registry
-      - mongo_db
-      
+        
   onboarding_task_service:
     image: onboarding-task-service
     ports:
       - "9094:9094"
     networks:
-      - service-registry
+      vpcbr: 
+        ipv4_address: 10.5.0.10
     depends_on:
       - service_registry
       - mongo_db
@@ -50,7 +63,8 @@ services:
     ports:
       - "9092:9092"
     networks:
-      - service-registry
+      vpcbr: 
+        ipv4_address: 10.5.0.11
     depends_on:
       - service_registry
       - cloud_gateway_service
@@ -62,17 +76,16 @@ services:
     ports:
       - "9091:9091"
     networks:
-      - service-registry
+      vpcbr: 
+        ipv4_address: 10.5.0.12
     depends_on:
       - service_registry
       - mongo_db
 
-  mongo_db:
-    image: 4130848d45a9
-    ports:
-      - "27017:27017"
-    networks:
-      - service-registry
-
 networks:
-  service-registry:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
