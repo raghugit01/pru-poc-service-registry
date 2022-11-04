@@ -12,7 +12,7 @@ services:
         ipv4_address: 10.5.0.5
         
   onboarding_associate_ui:
-    image: 7434e345a84d
+    image: onboarding-associate-ui
     ports:
       - "3000:3000"
     networks:
@@ -31,14 +31,38 @@ services:
     depends_on:
       - service_registry
       - mongo_db
+      
+  filemanager_service:
+    image: filemanager-service
+    ports:
+      - "9003:9003"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.15
+    depends_on:
+      - postgres_db
+      - service_registry
 
   mongo_db:
     image: 4130848d45a9
+    volumes:
+      - mongodb-data:/data/db
     ports:
       - "27017:27017"
     networks:
       vpcbr: 
         ipv4_address: 10.5.0.7
+        
+  postgres_db:
+    image: f8dd270e5152
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.14
          
   cloud_gateway_service:
     image: cloud-gateway-service
@@ -94,6 +118,10 @@ services:
     depends_on:
       - service_registry
       - mongo_db
+
+volumes:
+  mongodb-data:
+    name: mongodb-data
 
 networks:
   vpcbr:
