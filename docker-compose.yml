@@ -3,34 +3,18 @@
 # to install docker desktop : https://docs.docker.com/desktop/install/windows-install/
 version: "3"
 services:
-  service_registry:
-    image: service-registry
+  associate_service:
+    image: associate-service
     ports:
-      - "8761:8761"
+      - "9092:9092"
     networks:
       vpcbr: 
-        ipv4_address: 10.5.0.5
-        
-  onboarding_associate_ui:
-    image: onboarding-associate-ui
-    ports:
-      - "3000:3000"
-    networks:
-      vpcbr: 
-        ipv4_address: 10.5.0.13
+        ipv4_address: 10.5.0.11    
     depends_on:
-      - token_service
-
-  token_service:
-    image: token-service
-    ports:
-      - "9099:9099"
-    networks:
-      vpcbr: 
-        ipv4_address: 10.5.0.6
-    depends_on:
-      - service_registry
+      - cloud_config_service
       - mongo_db
+    command: ["./wait-for-it.sh", "cloud_config_service:9296", "python", "app.py"]
+    restart: always
       
   filemanager_service:
     image: filemanager-service
@@ -40,30 +24,61 @@ services:
       vpcbr: 
         ipv4_address: 10.5.0.15
     depends_on:
+      - cloud_config_service
       - postgres_db
-      - service_registry
-
-  mongo_db:
-    image: 4130848d45a9
-    volumes:
-      - mongodb-data:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      vpcbr: 
-        ipv4_address: 10.5.0.7
+    command: ["./wait-for-it.sh", "cloud_config_service:9296",  "python", "app.py"]
+    restart: always
         
-  postgres_db:
-    image: f8dd270e5152
-    environment:
-      POSTGRES_PASSWORD: admin
-      POSTGRES_USER: postgres
+  onboarding_task_service:
+    image: onboarding-task-service
     ports:
-      - "5432:5432"
+      - "9094:9094"
     networks:
       vpcbr: 
-        ipv4_address: 10.5.0.14
-         
+        ipv4_address: 10.5.0.10
+    depends_on:
+      - cloud_config_service
+      - mongo_db
+    command: ["./wait-for-it.sh", "cloud_config_service:9296",  "python", "app.py"]
+    restart: always
+      
+  skill-service:
+    image: skill-service
+    ports:
+      - "9091:9091"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.12
+    depends_on:
+      - cloud_config_service
+      - mongo_db
+    command: ["./wait-for-it.sh", "cloud_config_service:9296",  "python", "app.py"]
+    restart: always
+
+  onboarding_associate_ui:
+    image: onboarding-associate-ui
+    ports:
+      - "3000:3000"    
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.13
+    depends_on:
+      - token_service
+    restart: always
+
+  token_service:
+    image: token-service
+    ports:
+      - "9099:9099"
+    networks:
+      vpcbr: 
+        ipv4_address: 10.5.0.6
+    depends_on:
+      - cloud_config_service
+      - mongo_db
+    command: ["./wait-for-it.sh", "cloud_config_service:9296",  "python", "app.py"]
+    restart: always
+  
   cloud_gateway_service:
     image: cloud-gateway-service
     ports:
@@ -72,7 +87,9 @@ services:
       vpcbr: 
         ipv4_address: 10.5.0.8
     depends_on:
-      - service_registry
+      - cloud_config_service
+    command: ["./wait-for-it.sh", "cloud_config_service:9296",  "python", "app.py"]
+    restart: always
 
   cloud_config_service:
     image: cloud-config-service
@@ -83,41 +100,41 @@ services:
         ipv4_address: 10.5.0.9
     depends_on:
       - service_registry
-        
-  onboarding_task_service:
-    image: onboarding-task-service
+    command: ["./wait-for-it.sh", "service_registry:8761",  "python", "app.py"]
+    restart: always
+  
+  service_registry:
+    image: service-registry
     ports:
-      - "9094:9094"
+      - "8761:8761"
     networks:
       vpcbr: 
-        ipv4_address: 10.5.0.10
+        ipv4_address: 10.5.0.5
     depends_on:
-      - service_registry
       - mongo_db
-      
-  associate_service:
-    image: associate-service
+    command: ["./wait-for-it.sh", "mongo_db:27017",  "python", "app.py"]
+    restart: always
+
+  mongo_db:
+    image: 4130848d45a9
+    volumes:
+      - mongodb-data:/data/db
     ports:
-      - "9092:9092"
+      - "27017:27017"
     networks:
       vpcbr: 
-        ipv4_address: 10.5.0.11
-    depends_on:
-      - service_registry
-      - cloud_gateway_service
-      - cloud_config_service
-      - mongo_db
-      
-  skill-service:
-    image: skill-service
+        ipv4_address: 10.5.0.7
+
+  postgres_db:
+    image: f8dd270e5152
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: postgres
     ports:
-      - "9091:9091"
+      - "5432:5432"
     networks:
       vpcbr: 
-        ipv4_address: 10.5.0.12
-    depends_on:
-      - service_registry
-      - mongo_db
+        ipv4_address: 10.5.0.14
 
 volumes:
   mongodb-data:
