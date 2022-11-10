@@ -1,5 +1,6 @@
 #cmd : docker build -t service-registry .
-FROM openjdk:8
+FROM eclipse-temurin:8-jdk-alpine
 EXPOSE 8761
-ADD target/service-registry.jar service-registry.jar
+VOLUME /tmp
+COPY target/*.jar service-registry.jar
 ENTRYPOINT ["java","-jar","/service-registry.jar"]
